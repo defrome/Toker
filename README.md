@@ -5,11 +5,10 @@
   <img src="https://img.shields.io/badge/Axum-0.7-1f6feb?style=for-the-badge" alt="Axum" />
   <img src="https://img.shields.io/badge/LibSQL-Database-0ea5e9?style=for-the-badge" alt="LibSQL" />
   <img src="https://img.shields.io/badge/JWT-Rotation-22c55e?style=for-the-badge" alt="JWT Rotation" />
-  <img src="https://img.shields.io/badge/Frontend-TG%20Gifts%20Style-a855f7?style=for-the-badge" alt="Frontend" />
 </p>
 
 <p align="center">
-  🎁 Web3-style маркет подарков для Telegram с авторизацией, покупками и витриной в стиле TG Gifts
+  🎁 API для маркетплейса подарков Telegram с авторизацией, покупками и управлением каталогом
 </p>
 
 ---
@@ -21,7 +20,6 @@
 - 🛍️ Каталог подарков, заказы и статусы заказа
 - 💸 Цены в `⭐ Stars` и `₽ RUB` (без TON)
 - 🧾 Swagger UI для тестирования API
-- 🎨 Встроенный frontend `/app` с визуалом в стиле Telegram Gifts
 
 ## 🧩 Стек
 
@@ -29,7 +27,6 @@
 - `Axum`
 - `LibSQL / SQLite-compatible`
 - `Utoipa + Swagger UI`
-- `Vanilla JS + CSS` (frontend)
 
 ## 🚀 Быстрый старт
 
@@ -45,10 +42,9 @@ cp .env.example .env
 cargo run
 ```
 
-3. Открой интерфейсы:
+3. Открой Swagger UI:
 
-- Frontend: `http://127.0.0.1:3000/app`
-- Swagger UI: `http://127.0.0.1:3000/swagger-ui`
+- `http://127.0.0.1:3000/swagger-ui`
 
 ## ⚙️ ENV
 
@@ -116,16 +112,3 @@ POST /api/gifts
   "is_available": true
 }
 ```
-
-## 🎯 Frontend `/app`
-
-- 🔑 Логин через `POST /api/auth/login`
-- 🔄 Авто-refresh access токена через `POST /api/auth/refresh`
-- 🧲 Каталог и фильтры по валюте (`⭐` / `₽`)
-- 🛒 Покупка через `POST /api/orders/purchase`
-
----
-
-<p align="center">
-  <b>Made for Telegram Gifts vibes</b> ✨
-</p>

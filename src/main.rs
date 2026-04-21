@@ -9,8 +9,8 @@ mod services;
 use std::{env, net::SocketAddr};
 
 use anyhow::Context;
-use axum::{response::Redirect, routing::get, Router};
-use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
+use axum::Router;
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing::info;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
@@ -53,8 +53,6 @@ async fn main() -> anyhow::Result<()> {
         .merge(handlers::gifts::routes())
         .merge(handlers::users::routes())
         .merge(handlers::orders::routes())
-        .route("/", get(|| async { Redirect::to("/app") }))
-        .nest_service("/app", ServeDir::new("web"))
         .merge(
             SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", api_doc::ApiDoc::openapi()),
         )
