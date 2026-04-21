@@ -8,6 +8,30 @@ pub struct HealthResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "lowercase")]
+pub enum GiftCurrency {
+    Stars,
+    Rub,
+}
+
+impl GiftCurrency {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Stars => "stars",
+            Self::Rub => "rub",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "stars" => Some(Self::Stars),
+            "rub" => Some(Self::Rub),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Gift {
     pub id: i64,
     pub slug: String,
@@ -15,6 +39,7 @@ pub struct Gift {
     pub description: String,
     pub image_url: Option<String>,
     pub price: i64,
+    pub currency: GiftCurrency,
     pub rarity_level: String,
     pub is_available: bool,
 }
@@ -26,6 +51,7 @@ pub struct CreateGiftRequest {
     pub description: String,
     pub image_url: Option<String>,
     pub price: i64,
+    pub currency: GiftCurrency,
     pub rarity_level: String,
     pub is_available: bool,
 }
@@ -37,6 +63,7 @@ pub struct UpdateGiftRequest {
     pub description: Option<String>,
     pub image_url: Option<String>,
     pub price: Option<i64>,
+    pub currency: Option<GiftCurrency>,
     pub rarity_level: Option<String>,
     pub is_available: Option<bool>,
 }

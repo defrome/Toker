@@ -4,6 +4,8 @@ use utoipa::OpenApi;
 #[openapi(
     paths(
         crate::handlers::health::health,
+        crate::handlers::auth::login,
+        crate::handlers::auth::refresh,
         crate::handlers::gifts::create_gift,
         crate::handlers::gifts::list_gifts,
         crate::handlers::gifts::get_gift,
@@ -19,6 +21,7 @@ use utoipa::OpenApi;
         schemas(
             crate::models::HealthResponse,
             crate::models::Gift,
+            crate::models::GiftCurrency,
             crate::models::CreateGiftRequest,
             crate::models::UpdateGiftRequest,
             crate::models::User,
@@ -29,13 +32,17 @@ use utoipa::OpenApi;
             crate::models::PurchaseResponse,
             crate::models::UpdateOrderStatusRequest,
             crate::handlers::users::UpsertUserResponse,
-            crate::auth::AuthTokenResponse,
+            crate::handlers::auth::LoginResponse,
+            crate::handlers::auth::RefreshTokenRequest,
+            crate::handlers::auth::RefreshTokenResponse,
+            crate::auth::AuthTokensResponse,
             crate::errors::ApiErrorBody,
         )
     ),
     modifiers(&SecurityAddon),
     tags(
         (name = "Health", description = "Service health checks"),
+        (name = "Auth", description = "JWT authentication"),
         (name = "Gifts", description = "NFT gift catalog management"),
         (name = "Users", description = "Telegram user management"),
         (name = "Orders", description = "Gift purchasing and order lifecycle")

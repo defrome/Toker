@@ -1,3 +1,4 @@
+pub mod auth_refresh_tokens;
 pub mod client;
 pub mod gifts;
 pub mod migrations;

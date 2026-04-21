@@ -6,7 +6,7 @@ use axum::{
 };
 
 use crate::{
-    auth::{issue_token, AuthTokenResponse, AuthUser},
+    auth::{issue_token_pair, AuthTokensResponse, AuthUser},
     errors::{ApiError, ApiErrorBody},
     models::{UpsertUserRequest, User},
     services, AppState,
@@ -21,7 +21,7 @@ pub fn routes() -> Router<AppState> {
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct UpsertUserResponse {
     pub user: User,
-    pub auth: AuthTokenResponse,
+    pub auth: AuthTokensResponse,
 }
 
 #[utoipa::path(
@@ -47,15 +47,9 @@ pub async fn upsert_user(
     }
 
     let user = services::users::upsert(&state, payload).await?;
-    let access_token = issue_token(&state.jwt_secret, user.tg_id)?;
+    let auth = issue_token_pair(&state, user.tg_id).await?;
 
-    Ok((
-        StatusCode::CREATED,
-        Json(UpsertUserResponse {
-            user,
-            auth: AuthTokenResponse { access_token },
-        }),
-    ))
+    Ok((StatusCode::CREATED, Json(UpsertUserResponse { user, auth })))
 }
 
 #[utoipa::path(

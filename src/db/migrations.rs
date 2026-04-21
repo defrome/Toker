@@ -18,5 +18,33 @@ pub async fn run_schema(db: &Db) -> Result<(), ApiError> {
         }
     }
 
+    // Backward-compatible migration for existing databases created before `currency`.
+    if let Err(err) = conn
+        .execute(
+            "ALTER TABLE gifts ADD COLUMN currency TEXT NOT NULL DEFAULT 'stars' CHECK (currency IN ('stars', 'rub'))",
+            (),
+        )
+        .await
+    {
+        let msg = err.to_string();
+        if !msg.contains("duplicate column name") {
+            return Err(ApiError::from(err));
+        }
+    }
+
+    conn.execute_batch(
+        "CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT NOT NULL UNIQUE,
+            expires_at INTEGER NOT NULL,
+            revoked_at TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(tg_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_auth_refresh_tokens_user_id ON auth_refresh_tokens(user_id);",
+    )
+    .await?;
+
     Ok(())
 }

@@ -2,18 +2,19 @@ use libsql::{params, Connection, Row};
 
 use crate::{
     errors::ApiError,
-    models::{CreateGiftRequest, Gift},
+    models::{CreateGiftRequest, Gift, GiftCurrency},
 };
 
 pub async fn create(conn: &Connection, payload: &CreateGiftRequest) -> Result<Gift, ApiError> {
     conn.execute(
-        "INSERT INTO gifts (slug, name, description, image_url, price, rarity_level, is_available) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        "INSERT INTO gifts (slug, name, description, image_url, price, currency, rarity_level, is_available) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![
             payload.slug.as_str(),
             payload.name.as_str(),
             payload.description.as_str(),
             payload.image_url.clone(),
             payload.price,
+            payload.currency.as_str(),
             payload.rarity_level.as_str(),
             if payload.is_available { 1 } else { 0 }
         ],
@@ -27,7 +28,7 @@ pub async fn create(conn: &Connection, payload: &CreateGiftRequest) -> Result<Gi
 pub async fn list(conn: &Connection) -> Result<Vec<Gift>, ApiError> {
     let mut rows = conn
         .query(
-            "SELECT id, slug, name, description, image_url, price, rarity_level, is_available FROM gifts ORDER BY id DESC",
+            "SELECT id, slug, name, description, image_url, price, currency, rarity_level, is_available FROM gifts ORDER BY id DESC",
             (),
         )
         .await?;
@@ -43,7 +44,7 @@ pub async fn list(conn: &Connection) -> Result<Vec<Gift>, ApiError> {
 pub async fn get_by_id(conn: &Connection, id: i64) -> Result<Gift, ApiError> {
     let mut rows = conn
         .query(
-            "SELECT id, slug, name, description, image_url, price, rarity_level, is_available FROM gifts WHERE id = ?1",
+            "SELECT id, slug, name, description, image_url, price, currency, rarity_level, is_available FROM gifts WHERE id = ?1",
             params![id],
         )
         .await?;
@@ -58,13 +59,14 @@ pub async fn get_by_id(conn: &Connection, id: i64) -> Result<Gift, ApiError> {
 pub async fn update(conn: &Connection, gift: &Gift) -> Result<Gift, ApiError> {
     let affected = conn
         .execute(
-            "UPDATE gifts SET slug = ?1, name = ?2, description = ?3, image_url = ?4, price = ?5, rarity_level = ?6, is_available = ?7 WHERE id = ?8",
+            "UPDATE gifts SET slug = ?1, name = ?2, description = ?3, image_url = ?4, price = ?5, currency = ?6, rarity_level = ?7, is_available = ?8 WHERE id = ?9",
             params![
                 gift.slug.as_str(),
                 gift.name.as_str(),
                 gift.description.as_str(),
                 gift.image_url.clone(),
                 gift.price,
+                gift.currency.as_str(),
                 gift.rarity_level.as_str(),
                 if gift.is_available { 1 } else { 0 },
                 gift.id,
@@ -102,7 +104,9 @@ fn row_to_gift(row: &Row) -> Result<Gift, ApiError> {
         description: row.get(3)?,
         image_url: row.get(4).ok(),
         price: row.get(5)?,
-        rarity_level: row.get(6)?,
-        is_available: row.get::<i64>(7)? == 1,
+        currency: GiftCurrency::parse(&row.get::<String>(6)?)
+            .ok_or_else(|| ApiError::internal("unsupported currency in database"))?,
+        rarity_level: row.get(7)?,
+        is_available: row.get::<i64>(8)? == 1,
     })
 }

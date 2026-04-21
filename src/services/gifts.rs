@@ -68,6 +68,9 @@ pub async fn update(
         }
         gift.price = price;
     }
+    if let Some(currency) = payload.currency {
+        gift.currency = currency;
+    }
     if let Some(rarity_level) = payload.rarity_level {
         gift.rarity_level = rarity_level;
     }
