@@ -1,0 +1,4 @@
+/target
+.env
+marketplace.db
+.DS_Store
