@@ -6,6 +6,7 @@ use axum::{
 };
 
 use crate::{
+    auth::AuthUser,
     errors::{ApiError, ApiErrorBody},
     models::{CreateGiftRequest, Gift, UpdateGiftRequest},
     services, AppState,
@@ -24,6 +25,7 @@ pub fn routes() -> Router<AppState> {
     post,
     path = "/api/gifts",
     tag = "Gifts",
+    security(("bearer_auth" = [])),
     request_body = CreateGiftRequest,
     responses(
         (status = 201, description = "Gift created", body = Gift),
@@ -32,6 +34,7 @@ pub fn routes() -> Router<AppState> {
     )
 )]
 pub async fn create_gift(
+    _auth: AuthUser,
     State(state): State<AppState>,
     Json(payload): Json<CreateGiftRequest>,
 ) -> Result<(StatusCode, Json<Gift>), ApiError> {
@@ -43,9 +46,13 @@ pub async fn create_gift(
     get,
     path = "/api/gifts",
     tag = "Gifts",
+    security(("bearer_auth" = [])),
     responses((status = 200, description = "Gift list", body = [Gift]))
 )]
-pub async fn list_gifts(State(state): State<AppState>) -> Result<Json<Vec<Gift>>, ApiError> {
+pub async fn list_gifts(
+    _auth: AuthUser,
+    State(state): State<AppState>,
+) -> Result<Json<Vec<Gift>>, ApiError> {
     let gifts = services::gifts::list(&state).await?;
     Ok(Json(gifts))
 }
@@ -54,6 +61,7 @@ pub async fn list_gifts(State(state): State<AppState>) -> Result<Json<Vec<Gift>>
     get,
     path = "/api/gifts/{id}",
     tag = "Gifts",
+    security(("bearer_auth" = [])),
     params(("id" = i64, Path, description = "Gift id")),
     responses(
         (status = 200, description = "Gift", body = Gift),
@@ -61,6 +69,7 @@ pub async fn list_gifts(State(state): State<AppState>) -> Result<Json<Vec<Gift>>
     )
 )]
 pub async fn get_gift(
+    _auth: AuthUser,
     State(state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<Gift>, ApiError> {
@@ -72,6 +81,7 @@ pub async fn get_gift(
     put,
     path = "/api/gifts/{id}",
     tag = "Gifts",
+    security(("bearer_auth" = [])),
     params(("id" = i64, Path, description = "Gift id")),
     request_body = UpdateGiftRequest,
     responses(
@@ -81,6 +91,7 @@ pub async fn get_gift(
     )
 )]
 pub async fn update_gift(
+    _auth: AuthUser,
     State(state): State<AppState>,
     Path(id): Path<i64>,
     Json(payload): Json<UpdateGiftRequest>,
@@ -93,6 +104,7 @@ pub async fn update_gift(
     delete,
     path = "/api/gifts/{id}",
     tag = "Gifts",
+    security(("bearer_auth" = [])),
     params(("id" = i64, Path, description = "Gift id")),
     responses(
         (status = 204, description = "Gift deleted"),
@@ -100,6 +112,7 @@ pub async fn update_gift(
     )
 )]
 pub async fn delete_gift(
+    _auth: AuthUser,
     State(state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<StatusCode, ApiError> {

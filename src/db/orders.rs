@@ -80,21 +80,45 @@ pub async fn get_by_id(conn: &Connection, id: i64) -> Result<Order, ApiError> {
     row_to_order(&row)
 }
 
-pub async fn update_status(
+pub async fn get_by_id_for_user(
     conn: &Connection,
     id: i64,
+    user_id: i64,
+) -> Result<Order, ApiError> {
+    let mut rows = conn
+        .query(
+            "SELECT id, user_id, gift_id, status, tx_hash, created_at FROM orders WHERE id = ?1 AND user_id = ?2",
+            params![id, user_id],
+        )
+        .await?;
+
+    let Some(row) = rows.next().await? else {
+        return Err(ApiError::not_found(format!(
+            "order with id={id} for user_id={user_id} not found"
+        )));
+    };
+
+    row_to_order(&row)
+}
+
+pub async fn update_status_for_user(
+    conn: &Connection,
+    id: i64,
+    user_id: i64,
     status: OrderStatus,
     tx_hash: Option<String>,
 ) -> Result<Order, ApiError> {
     let affected = conn
         .execute(
-            "UPDATE orders SET status = ?1, tx_hash = ?2 WHERE id = ?3",
-            params![status.as_str(), tx_hash, id],
+            "UPDATE orders SET status = ?1, tx_hash = ?2 WHERE id = ?3 AND user_id = ?4",
+            params![status.as_str(), tx_hash, id, user_id],
         )
         .await?;
 
     if affected == 0 {
-        return Err(ApiError::not_found(format!("order with id={id} not found")));
+        return Err(ApiError::not_found(format!(
+            "order with id={id} for user_id={user_id} not found"
+        )));
     }
 
     get_by_id(conn, id).await

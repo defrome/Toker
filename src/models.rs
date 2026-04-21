@@ -95,7 +95,6 @@ pub struct Order {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct PurchaseRequest {
-    pub user_id: i64,
     pub gift_id: i64,
 }
 

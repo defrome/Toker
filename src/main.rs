@@ -1,4 +1,5 @@
 mod api_doc;
+mod auth;
 mod db;
 mod errors;
 mod handlers;
@@ -19,6 +20,7 @@ use crate::db::client::Db;
 #[derive(Clone)]
 pub struct AppState {
     pub db: Db,
+    pub jwt_secret: String,
 }
 
 #[tokio::main]
@@ -29,13 +31,15 @@ async fn main() -> anyhow::Result<()> {
     let database_url = env::var("DATABASE_URL").context(
         "DATABASE_URL is not set. Use local path like file:marketplace.db or libsql URL",
     )?;
+    let jwt_secret = env::var("JWT_SECRET")
+        .context("JWT_SECRET is not set. Set a strong secret for JWT signing")?;
 
     let db = Db::connect(&database_url).await?;
     db::migrations::run_schema(&db)
         .await
         .map_err(|e| anyhow::anyhow!("failed to run schema migration: {e:?}"))?;
 
-    let state = AppState { db };
+    let state = AppState { db, jwt_secret };
 
     let app = Router::new()
         .merge(handlers::health::routes())

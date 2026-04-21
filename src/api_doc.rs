@@ -28,9 +28,12 @@ use utoipa::OpenApi;
             crate::models::PurchaseRequest,
             crate::models::PurchaseResponse,
             crate::models::UpdateOrderStatusRequest,
+            crate::handlers::users::UpsertUserResponse,
+            crate::auth::AuthTokenResponse,
             crate::errors::ApiErrorBody,
         )
     ),
+    modifiers(&SecurityAddon),
     tags(
         (name = "Health", description = "Service health checks"),
         (name = "Gifts", description = "NFT gift catalog management"),
@@ -39,3 +42,17 @@ use utoipa::OpenApi;
     )
 )]
 pub struct ApiDoc;
+
+struct SecurityAddon;
+
+impl utoipa::Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        use utoipa::openapi::security::{Http, HttpAuthScheme, SecurityScheme};
+
+        let components = openapi.components.get_or_insert_with(Default::default);
+        components.add_security_scheme(
+            "bearer_auth",
+            SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+        );
+    }
+}

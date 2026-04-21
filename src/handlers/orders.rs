@@ -5,6 +5,7 @@ use axum::{
 };
 
 use crate::{
+    auth::AuthUser,
     errors::{ApiError, ApiErrorBody},
     models::{Order, PurchaseRequest, PurchaseResponse, UpdateOrderStatusRequest},
     services, AppState,
@@ -21,6 +22,7 @@ pub fn routes() -> Router<AppState> {
     post,
     path = "/api/orders/purchase",
     tag = "Orders",
+    security(("bearer_auth" = [])),
     request_body = PurchaseRequest,
     responses(
         (status = 200, description = "Purchase created", body = PurchaseResponse),
@@ -30,10 +32,11 @@ pub fn routes() -> Router<AppState> {
     )
 )]
 pub async fn purchase(
+    auth: AuthUser,
     State(state): State<AppState>,
     Json(payload): Json<PurchaseRequest>,
 ) -> Result<Json<PurchaseResponse>, ApiError> {
-    let response = services::orders::purchase(&state, payload).await?;
+    let response = services::orders::purchase(&state, auth.tg_id, payload).await?;
     Ok(Json(response))
 }
 
@@ -41,6 +44,7 @@ pub async fn purchase(
     get,
     path = "/api/orders/{id}",
     tag = "Orders",
+    security(("bearer_auth" = [])),
     params(("id" = i64, Path, description = "Order id")),
     responses(
         (status = 200, description = "Order", body = Order),
@@ -48,10 +52,11 @@ pub async fn purchase(
     )
 )]
 pub async fn get_order(
+    auth: AuthUser,
     State(state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<Order>, ApiError> {
-    let order = services::orders::get(&state, id).await?;
+    let order = services::orders::get(&state, id, auth.tg_id).await?;
     Ok(Json(order))
 }
 
@@ -59,6 +64,7 @@ pub async fn get_order(
     patch,
     path = "/api/orders/{id}/status",
     tag = "Orders",
+    security(("bearer_auth" = [])),
     params(("id" = i64, Path, description = "Order id")),
     request_body = UpdateOrderStatusRequest,
     responses(
@@ -67,10 +73,11 @@ pub async fn get_order(
     )
 )]
 pub async fn update_order_status(
+    auth: AuthUser,
     State(state): State<AppState>,
     Path(id): Path<i64>,
     Json(payload): Json<UpdateOrderStatusRequest>,
 ) -> Result<Json<Order>, ApiError> {
-    let order = services::orders::update_status(&state, id, payload).await?;
+    let order = services::orders::update_status(&state, id, auth.tg_id, payload).await?;
     Ok(Json(order))
 }
