@@ -1,52 +1,85 @@
-# Telegram Gifts Marketplace API (Rust + LibSQL)
+# TG Gifts Market API
 
-Бэкенд REST API и веб-клиент для маркетплейса Telegram Gifts.
+<p align="center">
+  <img src="https://img.shields.io/badge/Rust-API-orange?style=for-the-badge&logo=rust" alt="Rust" />
+  <img src="https://img.shields.io/badge/Axum-0.7-1f6feb?style=for-the-badge" alt="Axum" />
+  <img src="https://img.shields.io/badge/LibSQL-Database-0ea5e9?style=for-the-badge" alt="LibSQL" />
+  <img src="https://img.shields.io/badge/JWT-Rotation-22c55e?style=for-the-badge" alt="JWT Rotation" />
+  <img src="https://img.shields.io/badge/Frontend-TG%20Gifts%20Style-a855f7?style=for-the-badge" alt="Frontend" />
+</p>
 
-Технологии:
-- Rust + Tokio
-- Axum
-- LibSQL (SQLite-compatible)
-- Utoipa + Swagger UI
-- Vanilla JS frontend (`/app`)
+<p align="center">
+  🎁 Web3-style маркет подарков для Telegram с авторизацией, покупками и витриной в стиле TG Gifts
+</p>
 
-## Запуск
+---
 
-1. Проверь `.env`:
+## ✨ Что внутри
+
+- 🔐 JWT auth с `access + refresh` и ротацией refresh-токенов
+- 🧠 Безопасное хранение только SHA-256 хэшей refresh-токенов
+- 🛍️ Каталог подарков, заказы и статусы заказа
+- 💸 Цены в `⭐ Stars` и `₽ RUB` (без TON)
+- 🧾 Swagger UI для тестирования API
+- 🎨 Встроенный frontend `/app` с визуалом в стиле Telegram Gifts
+
+## 🧩 Стек
+
+- `Rust + Tokio`
+- `Axum`
+- `LibSQL / SQLite-compatible`
+- `Utoipa + Swagger UI`
+- `Vanilla JS + CSS` (frontend)
+
+## 🚀 Быстрый старт
+
+1. Скопируй env:
+
+```bash
+cp .env.example .env
+```
+
+2. Запусти сервер:
+
+```bash
+cargo run
+```
+
+3. Открой интерфейсы:
+
+- Frontend: `http://127.0.0.1:3000/app`
+- Swagger UI: `http://127.0.0.1:3000/swagger-ui`
+
+## ⚙️ ENV
 
 ```env
 DATABASE_URL=file:marketplace.db
-JWT_ACCESS_SECRET=change_me_to_long_random_access_secret
-JWT_REFRESH_SECRET=change_me_to_long_random_refresh_secret
+JWT_ACCESS_SECRET=replace_with_long_random_access_secret
+JWT_REFRESH_SECRET=replace_with_long_random_refresh_secret
 JWT_ISSUER=my-site
 JWT_AUDIENCE=my-site-api
 RUST_LOG=my_site=debug,tower_http=info
+# LIBSQL_AUTH_TOKEN=replace_with_turso_token
 ```
 
-Для remote LibSQL (Turso):
+Для Turso/remote LibSQL:
 
 ```env
 DATABASE_URL=libsql://<your-db>.turso.io
 LIBSQL_AUTH_TOKEN=<token>
 ```
 
-2. Запусти:
+## 🔐 Auth виджет
 
-```bash
-cargo run
-```
+| Тип | TTL | Секрет | Особенность |
+|---|---:|---|---|
+| `access_token` | 1 час | `JWT_ACCESS_SECRET` | для защищённых endpoint'ов |
+| `refresh_token` | 30 дней | `JWT_REFRESH_SECRET` | одноразовый (rotation) |
 
-3. Интерфейсы:
-- Frontend: `http://127.0.0.1:3000/app`
-- Swagger UI: `http://127.0.0.1:3000/swagger-ui`
+- Claims: `iss`, `aud`, `iat`, `nbf`, `jti`, `token_type`, `sub`
+- После `POST /api/auth/refresh` старый refresh токен становится недействительным
 
-## JWT аутентификация (реализовано)
-
-- `access_token` (1 час) и `refresh_token` (30 дней) подписываются разными секретами.
-- В claims добавлены `iss`, `aud`, `iat`, `nbf`, `jti`, `token_type`.
-- Refresh-токены одноразовые (rotation): после успешного `/api/auth/refresh` старый refresh помечается использованным.
-- В БД хранится только SHA-256 хэш refresh-токена (`auth_refresh_tokens`), а не сам токен.
-
-## Основные endpoints
+## 🌐 API маршруты
 
 - `GET /api/health`
 - `POST /api/auth/login`
@@ -62,15 +95,11 @@ cargo run
 - `GET /api/orders/{id}`
 - `PATCH /api/orders/{id}/status`
 
-## Валюта подарков
+## 💎 Валюта подарков
 
-Вместо TON у подарков теперь:
-- `currency: "stars"` (Telegram Stars)
-- `currency: "rub"` (рубли)
-
-Поля подарка:
-- `price` (целое число)
-- `currency` (`stars` | `rub`)
+- `currency: "stars"` → Telegram Stars `⭐`
+- `currency: "rub"` → Russian Ruble `₽`
+- `price` хранится как целое число
 
 Пример создания подарка:
 
@@ -88,10 +117,15 @@ POST /api/gifts
 }
 ```
 
-## Фронтенд
+## 🎯 Frontend `/app`
 
-`/app` это TG Gifts-style UI:
-- логин через `POST /api/auth/login`
-- авто-refresh access токена через `POST /api/auth/refresh`
-- каталог подарков с фильтрами по валюте (`⭐` / `₽`)
-- покупка через `POST /api/orders/purchase`
+- 🔑 Логин через `POST /api/auth/login`
+- 🔄 Авто-refresh access токена через `POST /api/auth/refresh`
+- 🧲 Каталог и фильтры по валюте (`⭐` / `₽`)
+- 🛒 Покупка через `POST /api/orders/purchase`
+
+---
+
+<p align="center">
+  <b>Made for Telegram Gifts vibes</b> ✨
+</p>
